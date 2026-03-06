@@ -21,7 +21,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:1357")
+                        .allowedOrigins("https://time-capsule-snowy.vercel.app/")
                         .allowedMethods("*")
                         .allowedHeaders("*");
             }

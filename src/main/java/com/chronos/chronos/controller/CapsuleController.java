@@ -51,7 +51,7 @@ public class CapsuleController {
             result.add(Map.of(
                     "name", file.getOriginalFilename(),
                     "type", file.getContentType(),
-                    "url", "http://localhost:8080" + url));
+                    "url", "https://chronos-backend-5ovw.onrender.com" + url));
         }
         return ResponseEntity.ok(result);
     }
