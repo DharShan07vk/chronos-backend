@@ -16,6 +16,7 @@ public class CapsuleRequest {
     private LocalDateTime unlockAt;
     private String shareEmail;
     private String weather;
+    private Boolean requireMedia;
     private List<MediaRef> photos;
     private List<MediaRef> videos;
 
@@ -27,6 +28,5 @@ public class CapsuleRequest {
         private String type;
         private String name;
     }
-
 
 }

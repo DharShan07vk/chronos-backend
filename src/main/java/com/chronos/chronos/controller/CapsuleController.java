@@ -3,8 +3,7 @@ package com.chronos.chronos.controller;
 import com.chronos.chronos.dto.ApiResponse;
 import com.chronos.chronos.dto.CapsuleRequest;
 import com.chronos.chronos.dto.CapsuleResponse;
-import com.chronos.chronos.model.UserModel;
-import com.chronos.chronos.repositiory.CapsuleRepo;
+import com.chronos.chronos.exception.ApiException;
 import com.chronos.chronos.service.CapsuleService;
 import com.chronos.chronos.service.FileStorageService;
 
@@ -13,10 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,27 +31,30 @@ public class CapsuleController {
     @PostMapping("new")
     public ResponseEntity<ApiResponse<CapsuleResponse>> createCapsule(@RequestBody CapsuleRequest request,
             @AuthenticationPrincipal UserDetails user) {
-
-        try {
-            CapsuleResponse response = capsuleService.create(user.getUsername(), request);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Capsule Created", response));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
-        }
-
+        CapsuleResponse response = capsuleService.create(user.getUsername(), request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Capsule Created", response));
     }
 
     @PostMapping("upload")
     public ResponseEntity<List<Map<String, String>>> uploadFiles(
             @RequestParam("files") List<MultipartFile> files) throws Exception {
+        if (CollectionUtils.isEmpty(files)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "At least one file is required.", "FILES_REQUIRED");
+        }
+
         List<Map<String, String>> result = new ArrayList<>();
         for (MultipartFile file : files) {
-            String url = fileStorageService.store(file);
+            String filename = fileStorageService.store(file);
+            String mediaUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/media/")
+                    .path(filename)
+                    .build()
+                    .toUriString();
+
             result.add(Map.of(
                     "name", file.getOriginalFilename(),
                     "type", file.getContentType(),
-                    "url", "https://chronos-backend-5ovw.onrender.com" + url));
+                    "url", mediaUrl));
         }
         return ResponseEntity.ok(result);
     }

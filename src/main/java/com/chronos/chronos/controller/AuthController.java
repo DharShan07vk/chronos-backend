@@ -1,5 +1,6 @@
 package com.chronos.chronos.controller;
 
+
 import com.chronos.chronos.dto.ApiResponse;
 import com.chronos.chronos.dto.LoginRequest;
 import com.chronos.chronos.dto.LoginResponse;
@@ -17,29 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("auth/")
 public class AuthController {
 
-    private  final AuthService authService;
-
+    private final AuthService authService;
 
     @PostMapping("login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request){
-        try{
-            LoginResponse response = authService.login(request);
-            return ResponseEntity.ok(new ApiResponse<>(true,"Login Successful", response));
-        }
-        catch(Exception e){
-            return ResponseEntity.badRequest().body(new ApiResponse<>(false,"Login Failed" ,e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Login Successful", response));
     }
 
     @PostMapping("register")
-    public ResponseEntity<ApiResponse<LoginResponse>> register(@RequestBody RegisterRequest request){
-        try{
-            LoginResponse response = authService.register(request);
-            return ResponseEntity.ok(new ApiResponse<>(true,"Register Successful", response));
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(false,"Register Failed" ,e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<LoginResponse>> register(@RequestBody RegisterRequest request) {
+        LoginResponse response = authService.register(request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Register Successful", response));
     }
 }
-

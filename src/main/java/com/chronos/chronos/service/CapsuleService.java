@@ -3,13 +3,16 @@ package com.chronos.chronos.service;
 import java.util.List;
 import com.chronos.chronos.dto.CapsuleRequest;
 import com.chronos.chronos.dto.CapsuleResponse;
+import com.chronos.chronos.exception.ApiException;
 import com.chronos.chronos.model.CapsuleModel;
 import com.chronos.chronos.model.MediaFileModel;
 import com.chronos.chronos.model.UserModel;
 import com.chronos.chronos.repositiory.CapsuleRepo;
 import com.chronos.chronos.repositiory.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -18,13 +21,38 @@ import java.time.LocalDateTime;
 public class CapsuleService {
     private final CapsuleRepo capsuleRepo;
     private final UserRepo userRepo;
+    private final FileStorageService fileStorageService;
 
     public CapsuleResponse create(String email, CapsuleRequest request) {
+        if (request == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Capsule payload is required.", "CAPSULE_PAYLOAD_REQUIRED");
+        }
+
         UserModel user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User with email " + email + " not found"));
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found.", "USER_NOT_FOUND"));
+
+        if (!StringUtils.hasText(request.getTitle())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Capsule title is required.", "CAPSULE_TITLE_REQUIRED");
+        }
+        if (request.getUnlockAt() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Capsule unlock date is required.",
+                    "CAPSULE_UNLOCK_DATE_REQUIRED");
+        }
+
+        int mediaCount = safeSize(request.getPhotos()) + safeSize(request.getVideos());
+        if (Boolean.TRUE.equals(request.getRequireMedia()) && mediaCount == 0) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Media upload is required for this capsule. Please upload media and try again.",
+                    "MEDIA_REQUIRED");
+        }
+
+        validateMediaReferences(request.getPhotos(), "photo");
+        validateMediaReferences(request.getVideos(), "video");
+
         CapsuleModel capsule = new CapsuleModel();
         capsule.setUser(user);
-        capsule.setTitle(request.getTitle());
+        capsule.setTitle(request.getTitle().trim());
         capsule.setContent(request.getContent());
         capsule.setUnlockDate(request.getUnlockAt());
         capsule.setShareEmail(request.getShareEmail());
@@ -56,6 +84,32 @@ public class CapsuleService {
 
         return toResponse(capsuleRepo.save(capsule));
 
+    }
+
+    private void validateMediaReferences(List<CapsuleRequest.MediaRef> mediaRefs, String mediaType) {
+        if (mediaRefs == null) {
+            return;
+        }
+
+        for (CapsuleRequest.MediaRef mediaRef : mediaRefs) {
+            if (mediaRef == null || !StringUtils.hasText(mediaRef.getUrl())) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid " + mediaType + " reference in request.",
+                        "INVALID_MEDIA_REFERENCE");
+            }
+
+            if (!fileStorageService.mediaFileExists(mediaRef.getUrl())) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "One or more uploaded media files are missing. Please upload again before creating the capsule.",
+                        "MEDIA_FILE_NOT_FOUND");
+            }
+        }
+    }
+
+    private int safeSize(List<?> list) {
+        return list == null ? 0 : list.size();
     }
 
     public List<CapsuleResponse> getCapsules(String email) {
