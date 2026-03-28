@@ -15,10 +15,19 @@ public class CapsuleRequest {
     private String content;
     private LocalDateTime unlockAt;
     private String shareEmail;
+    private List<ShareRecipient> recipients;
     private String weather;
     private Boolean requireMedia;
     private List<MediaRef> photos;
     private List<MediaRef> videos;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ShareRecipient {
+        private String email;
+        private Boolean canReshare;
+    }
 
     @Data
     @NoArgsConstructor

@@ -32,6 +32,7 @@ public class CapsuleController {
     public ResponseEntity<ApiResponse<CapsuleResponse>> createCapsule(@RequestBody CapsuleRequest request,
             @AuthenticationPrincipal UserDetails user) {
         CapsuleResponse response = capsuleService.create(user.getUsername(), request);
+        System.out.println(request);
         return ResponseEntity.ok(new ApiResponse<>(true, "Capsule Created", response));
     }
 
@@ -62,6 +63,13 @@ public class CapsuleController {
     @GetMapping
     public ResponseEntity<List<CapsuleResponse>> getAllCapsules(@AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(capsuleService.getCapsules(user.getUsername()));
+    }
+
+    @GetMapping("dashboard")
+    public ResponseEntity<List<CapsuleResponse>> getDashboard(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam(name = "scope", required = false, defaultValue = "all") String scope) {
+        return ResponseEntity.ok(capsuleService.getDashboardCapsules(user.getUsername(), scope));
     }
 
 }

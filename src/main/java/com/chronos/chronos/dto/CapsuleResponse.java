@@ -15,10 +15,16 @@ public class CapsuleResponse {
     private String title;
     private String content;
     private String shareEmail;
+    private List<String> sharedWith;
     private String weather;
     private LocalDateTime createdAt;
     private LocalDateTime unlockAt;
     private boolean isLocked;
+    private boolean canViewContent;
+    private boolean canManageShares;
+    private String accessType;
+    private String shareStatus;
+    private String sharedByEmail;
     private List<MediaDto> photos;
     private List<MediaDto> videos;
 

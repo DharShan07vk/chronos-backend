@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "capsules")
+@Table(name = "capsules", indexes = {
+        @Index(name = "idx_capsule_owner_created", columnList = "user_id,created_at"),
+        @Index(name = "idx_capsule_unlock", columnList = "unlock_date")
+})
 @Data
 public class CapsuleModel {
 
@@ -36,11 +39,17 @@ public class CapsuleModel {
 
     @OneToMany(mappedBy = "capsule", cascade = CascadeType.ALL, orphanRemoval = true)
     @SQLRestriction("media_type = 'photo'")
+    @org.hibernate.annotations.BatchSize(size = 10)
     private List<MediaFileModel> photos = new ArrayList<>();
 
     @OneToMany(mappedBy = "capsule", cascade = CascadeType.ALL, orphanRemoval = true)
     @SQLRestriction("media_type = 'video'")
+    @org.hibernate.annotations.BatchSize(size = 10)
     private List<MediaFileModel> videos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "capsule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 10)
+    private List<CapsuleShareModel> shares = new ArrayList<>();
 }
 //
 // id: string;
