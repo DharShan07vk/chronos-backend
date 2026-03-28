@@ -129,6 +129,7 @@ public class CapsuleService {
             capsuleShareRepo.save(share);
 
             try {
+                System.out.println("Creating share record for " + recipientEmail);
                 mailService.Share(recipientEmail, ownerName);
             } catch (Exception ignored) {
                 // Notification failures should not fail capsule creation.

@@ -63,6 +63,7 @@ public class MailService {
             helper.setText(getBlueprintHtmlMessage(title, badgeText, content), true);
             helper.setFrom("noreply@gmail.com");
             mailSender.send(message);
+            System.out.println("Mail sent");
         } catch (MessagingException e) {
             e.printStackTrace();
         }
@@ -75,7 +76,7 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
-            helper.setSubject("CHRONOS // CAPSULE UNLOCKED");
+            helper.setSubject("CHRONOS Your CAPSULE UNLOCKED");
 
             String title = "CAPSULE UNLOCKED";
             String badgeText = "SYS_ALERT :: " + LocalDate.now().toString();
